@@ -9,15 +9,15 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 public class Tank {
-    private Vector2 position;
-    private Vector2 tmp;
-    private TextureRegion[] textures;
+    private final Vector2 position;
+    private final Vector2 tmp;
+    private final TextureRegion[] textures;
     private float angle;
-    private float speed;
+    private final float speed;
 
     private float moveTimer;
-    private float timePerFrame;
-    private Projectile projectile;
+    private final float timePerFrame;
+    private final Projectile projectile;
 
     public Vector2 getPosition() {
         return position;
@@ -52,11 +52,15 @@ public class Tank {
             }
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.K) && projectile.isNotVisible()) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.K) && !projectile.isVisible()) {
             tmp.set(position);
-            tmp.add(50 * MathUtils.cosDeg(angle), 50 * MathUtils.sinDeg(angle));
+            // поправка на длину ствола
+            tmp.add(30 * MathUtils.cosDeg(angle), 30 * MathUtils.sinDeg(angle));
             projectile.fire(tmp, angle);
         }
+        // можно, конечно, было написать if(projectile.isVisible() .... , но пока я оставил
+        // эту проверку в теле апдейта самого снаряда. Возможно в проекте мы будем проверять
+        // это именно здесь, ну или в апдейте ГеймКонтроллера (чтобы не выполнять лишние вызовы)
         projectile.update(dt);
         checkBounds();
     }

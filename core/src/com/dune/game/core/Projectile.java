@@ -1,6 +1,5 @@
 package com.dune.game.core;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -8,13 +7,13 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 public class Projectile {
-    private Vector2 position;
-    private Vector2 velocity;
-    private boolean visible;
-    private TextureRegion texture;
-    private float width;
-    private float height;
+    private final Vector2 position;
+    private final Vector2 velocity;
+    private final float width;
+    private final float height;
     private float angle;
+    private boolean visible;
+    private final TextureRegion texture;
 
     public Projectile(TextureAtlas atlas) {
         visible = false;
@@ -23,11 +22,11 @@ public class Projectile {
         height = texture.getRegionHeight();
         position = new Vector2();
         velocity = new Vector2();
-
     }
 
     public void fire(Vector2 startPosition, float angle) {
         position.set(startPosition);
+        // сделал скорость 200, чтобы танк не обгонял свои снаряды)
         velocity.set(200.0f * MathUtils.cosDeg(angle), 200.0f * MathUtils.sinDeg(angle));
         this.angle = angle;
         visible = true;
@@ -45,7 +44,7 @@ public class Projectile {
         batch.draw(texture, position.x - width / 2, position.y - height / 2, width / 2, height / 2, width, height, 1, 1, angle);
     }
 
-    public boolean isNotVisible() {
-        return !visible;
+    public boolean isVisible() {
+        return visible;
     }
 }
