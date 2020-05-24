@@ -3,11 +3,10 @@ package com.dune.game.core;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class WorldRenderer {
-    private SpriteBatch batch;
-    private GameController gc;
+    private final SpriteBatch batch;
+    private final GameController gc;
 
     public WorldRenderer(SpriteBatch batch, GameController gc) {
         this.batch = batch;
