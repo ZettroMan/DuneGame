@@ -31,6 +31,27 @@ tank
   orig: 64, 64
   offset: 0, 0
   index: -1
+fire
+  rotate: false
+  xy: 84, 68
+  size: 40, 48
+  orig: 40, 48
+  offset: 0, 0
+  index: -1
+gem
+  rotate: false
+  xy: 126, 68
+  size: 40, 47
+  orig: 40, 47
+  offset: 0, 0
+  index: -1
+water
+  rotate: false
+  xy: 168, 68
+  size: 32, 47
+  orig: 32, 47
+  offset: 0, 0
+  index: -1
 bullet
   rotate: false
   xy: 2, 84
