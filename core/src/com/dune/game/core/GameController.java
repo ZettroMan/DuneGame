@@ -27,24 +27,31 @@ public class GameController {
         Assets.getInstance().loadAssets();
         this.map = new BattleMap();
         this.projectilesController = new ProjectilesController(this);
-        this.tank = new Tank(this, 200, 200);;
+        this.tank = new Tank(this, 200, 200);
     }
 
     public void update(float dt) {
+        map.update(dt);
         tank.update(dt);
         projectilesController.update(dt);
         checkCollisions(dt);
     }
 
     public void checkCollisions(float dt) {
-        int tankTileRow = MathUtils.floor( tank.getPosition().y / 80);
-        int tankTileCol = MathUtils.floor( tank.getPosition().x / 80);
+        int tankTileRow = MathUtils.floor(tank.getPosition().y / 80);
+        int tankTileCol = MathUtils.floor(tank.getPosition().x / 80);
+        for (int row = tankTileRow - 1; row <= tankTileRow + 1; row++) {
+            if (row < 0 || row > 8) continue;
+            for (int col = tankTileCol - 1; col <= tankTileCol + 1; col++) {
+                if (col < 0 || col > 15) continue;
+                float tileCenterY = row * 80 + 40;
+                float tileCenterX = col * 80 + 40;
+                if (tank.getPosition().dst(tileCenterX, tileCenterY) < 50) {
+                    map.getGizmos()[row][col] = 0;
+                }
 
-        float tankTileCenterY = tankTileRow * 80 + 40;
-        float tankTileCenterX = tankTileCol * 80 + 40;
-
-        if(tank.getPosition().dst(tankTileCenterX, tankTileCenterY) < 30) {
-            map.getGizmos()[tankTileRow][tankTileCol] = 0;
+            }
         }
+
     }
 }
