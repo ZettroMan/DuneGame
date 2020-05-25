@@ -8,28 +8,24 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
-public class Tank {
-    private final Vector2 position;
-    private final Vector2 tmp;
-    private final TextureRegion[] textures;
+public class Tank extends GameObject {
+    private Vector2 destination;
+    private TextureRegion[] textures;
     private float angle;
-    private final float speed;
+    private float speed;
+    private float rotationSpeed;
 
     private float moveTimer;
-    private final float timePerFrame;
-    private final Projectile projectile;
+    private float timePerFrame;
 
-    public Vector2 getPosition() {
-        return position;
-    }
-
-    public Tank(TextureAtlas atlas, float x, float y) {
-        this.position = new Vector2(x, y);
-        this.tmp = new Vector2(0, 0);
-        this.textures = new TextureRegion(atlas.findRegion("tankanim")).split(64, 64)[0];
-        this.speed = 140.0f;
+    public Tank(GameController gc, float x, float y) {
+        super(gc);
+        this.position.set(x, y);
+        this.destination = new Vector2(position);
+        this.textures = Assets.getInstance().getAtlas().findRegion("tankanim").split(64, 64)[0];
+        this.speed = 120.0f;
         this.timePerFrame = 0.08f;
-        projectile = new Projectile(atlas);
+        this.rotationSpeed = 90.0f;
     }
 
     private int getCurrentFrameIndex() {
@@ -37,32 +33,49 @@ public class Tank {
     }
 
     public void update(float dt) {
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            angle += 180.0f * dt;
+        if (Gdx.input.justTouched()) {
+            destination.set(Gdx.input.getX(), 720 - Gdx.input.getY());
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            angle -= 180.0f * dt;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-            position.add(speed * MathUtils.cosDeg(angle) * dt, speed * MathUtils.sinDeg(angle) * dt);
+        if (position.dst(destination) > 3.0f) {
+            float angleTo = tmp.set(destination).sub(position).angle();
+            if (Math.abs(angle - angleTo) > 3.0f) {
+                if (angle > angleTo) {
+                    if (Math.abs(angle - angleTo) <= 180.0f) {
+                        angle -= rotationSpeed * dt;
+                    } else {
+                        angle += rotationSpeed * dt;
+                    }
+                } else {
+                    if (Math.abs(angle - angleTo) <= 180.0f) {
+                        angle += rotationSpeed * dt;
+                    } else {
+                        angle -= rotationSpeed * dt;
+                    }
+                }
+            }
+            if (angle < 0.0f) {
+                angle += 360.0f;
+            }
+            if (angle > 360.0f) {
+                angle -= 360.0f;
+            }
+
             moveTimer += dt;
-        } else {
-            if (getCurrentFrameIndex() != 0) {
-                moveTimer += dt;
+            tmp.set(speed, 0).rotate(angle);
+            position.mulAdd(tmp, dt);
+            if (position.dst(destination) < 120.0f && Math.abs(angleTo - angle) > 10) {
+                position.mulAdd(tmp, -dt);
             }
         }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.K) && !projectile.isVisible()) {
-            tmp.set(position);
-            // поправка на длину ствола
-            tmp.add(30 * MathUtils.cosDeg(angle), 30 * MathUtils.sinDeg(angle));
-            projectile.fire(tmp, angle);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.K)) {
+            fire();
         }
-        // можно, конечно, было написать if(projectile.isVisible() .... , но пока я оставил
-        // эту проверку в теле апдейта самого снаряда. Возможно в проекте мы будем проверять
-        // это именно здесь, ну или в апдейте ГеймКонтроллера (чтобы не выполнять лишние вызовы)
-        projectile.update(dt);
         checkBounds();
+    }
+
+    public void fire() {
+        tmp.set(position).add(32 * MathUtils.cosDeg(angle), 32 * MathUtils.sinDeg(angle));
+        gc.getProjectilesController().setup(tmp, angle);
     }
 
     public void checkBounds() {
@@ -82,6 +95,5 @@ public class Tank {
 
     public void render(SpriteBatch batch) {
         batch.draw(textures[getCurrentFrameIndex()], position.x - 40, position.y - 40, 40, 40, 80, 80, 1, 1, angle);
-        projectile.render(batch);
     }
 }
