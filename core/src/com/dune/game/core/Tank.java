@@ -11,13 +11,10 @@ import com.badlogic.gdx.math.Vector2;
 public class Tank extends GameObject {
     private Vector2 destination;
     private TextureRegion[] textures;
-    private TextureRegion[][] shotTextures;
     private float angle;
     private float speed;
     private float rotationSpeed;
-    private boolean justFired;
-    private float shotTimer;
-    private Vector2 shotPosition;
+
     private float moveTimer;
     private float timePerFrame;
 
@@ -26,12 +23,9 @@ public class Tank extends GameObject {
         this.position.set(x, y);
         this.destination = new Vector2(position);
         this.textures = Assets.getInstance().getAtlas().findRegion("tankanim").split(64, 64)[0];
-        this.shotTextures = Assets.getInstance().getAtlas().findRegion("cannonshot").split(64, 64);
         this.speed = 120.0f;
         this.timePerFrame = 0.08f;
         this.rotationSpeed = 90.0f;
-        this.justFired = false;
-        this.shotPosition = new Vector2();
     }
 
     private int getCurrentFrameIndex() {
@@ -73,10 +67,6 @@ public class Tank extends GameObject {
                 position.mulAdd(tmp, -dt);
             }
         }
-        if (justFired) {
-            shotTimer += 4 * dt;
-        }
-
         if (Gdx.input.isKeyJustPressed(Input.Keys.K)) {
             fire();
         }
@@ -85,10 +75,7 @@ public class Tank extends GameObject {
 
     public void fire() {
         tmp.set(position).add(32 * MathUtils.cosDeg(angle), 32 * MathUtils.sinDeg(angle));
-        shotPosition.set(position).add(52 * MathUtils.cosDeg(angle), 52 * MathUtils.sinDeg(angle));
         gc.getProjectilesController().setup(tmp, angle);
-        justFired = true;
-        shotTimer = 0.0f;
     }
 
     public void checkBounds() {
@@ -108,14 +95,5 @@ public class Tank extends GameObject {
 
     public void render(SpriteBatch batch) {
         batch.draw(textures[getCurrentFrameIndex()], position.x - 40, position.y - 40, 40, 40, 80, 80, 1, 1, angle);
-        if (justFired) {
-            if (shotTimer / timePerFrame > 24) {
-                justFired = false;
-            } else {
-                int shotIndex = ((int) (shotTimer / timePerFrame)) % 25;
-                System.out.println(shotIndex);
-                batch.draw(shotTextures[shotIndex / 5][shotIndex - ((shotIndex / 5) * 5)], shotPosition.x - 36, shotPosition.y - 26, 32, 32, 64, 64, 1, 1, angle);
-            }
-        }
     }
 }
