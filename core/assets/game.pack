@@ -3,66 +3,52 @@ images1.png
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
-flame
+resource
   rotate: false
   xy: 2, 2
-  size: 768, 64
-  orig: 768, 64
-  offset: 0, 0
-  index: -1
-cannonshot
-  rotate: false
-  xy: 2, 68
-  size: 320, 320
-  orig: 320, 320
-  offset: 0, 0
-  index: -1
-tankanim
-  rotate: false
-  xy: 2, 390
-  size: 320, 64
-  orig: 320, 64
-  offset: 0, 0
-  index: -1
-grass
-  rotate: false
-  xy: 324, 68
   size: 80, 80
   orig: 80, 80
   offset: 0, 0
   index: -1
+grass
+  rotate: false
+  xy: 84, 2
+  size: 80, 80
+  orig: 80, 80
+  offset: 0, 0
+  index: -1
+tankanim
+  rotate: false
+  xy: 166, 2
+  size: 320, 64
+  orig: 320, 64
+  offset: 0, 0
+  index: -1
 turret
   rotate: false
-  xy: 772, 2
+  xy: 488, 2
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
 tank
   rotate: false
-  xy: 838, 2
+  xy: 554, 2
   size: 64, 64
   orig: 64, 64
-  offset: 0, 0
-  index: -1
-donuts
-  rotate: false
-  xy: 904, 2
-  size: 64, 64
-  orig: 64, 64
-  offset: 0, 0
-  index: -1
-gem
-  rotate: false
-  xy: 970, 2
-  size: 40, 47
-  orig: 40, 47
   offset: 0, 0
   index: -1
 bullet
   rotate: false
-  xy: 2, 456
+  xy: 2, 84
   size: 16, 16
   orig: 16, 16
+  offset: 0, 0
+  index: -1
+progressbar
+  rotate: false
+  xy: 20, 84
+  size: 60, 8
+  orig: 60, 8
   offset: 0, 0
   index: -1
