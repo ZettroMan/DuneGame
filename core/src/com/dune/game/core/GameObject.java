@@ -6,6 +6,7 @@ public abstract class GameObject {
     protected GameController gc;
     protected Vector2 position;
     protected Vector2 tmp;
+    protected boolean activated;
 
     public Vector2 getPosition() {
         return position;
@@ -19,9 +20,18 @@ public abstract class GameObject {
         return (int) (position.y / BattleMap.CELL_SIZE);
     }
 
+    public void activate() {
+        activated = true;
+    }
+
+    public void deactivate() {
+        activated = false;
+    }
+
     public GameObject(GameController gc) {
         this.gc = gc;
         this.position = new Vector2();
         this.tmp = new Vector2();
     }
+
 }
