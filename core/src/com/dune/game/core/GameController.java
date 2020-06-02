@@ -48,10 +48,10 @@ public class GameController {
         this.projectilesController = new ProjectilesController(this);
         this.tanksController = new TanksController(this);
         for (int i = 0; i < 5; i++) {
-            this.tanksController.setup(MathUtils.random(80, 1200), MathUtils.random(80, 640), Tank.Owner.PLAYER);
+            this.tanksController.setup(MathUtils.random(80, 1200), MathUtils.random(80, 640), Owner.PLAYER);
         }
         for (int i = 0; i < 2; i++) {
-            this.tanksController.setup(MathUtils.random(80, 1200), MathUtils.random(80, 640), Tank.Owner.AI);
+            this.tanksController.setup(MathUtils.random(80, 1200), MathUtils.random(80, 640), Owner.AI);
         }
         prepareInput();
     }
@@ -65,17 +65,28 @@ public class GameController {
     }
 
     public void checkCollisions(float dt) {
-        for (int i = 0; i < tanksController.activeSize() - 1; i++) {
-            Tank t1 = tanksController.getActiveList().get(i);
-            for (int j = i + 1; j < tanksController.activeSize(); j++) {
-                Tank t2 = tanksController.getActiveList().get(j);
-                float dst = t1.getPosition().dst(t2.getPosition());
-                if (dst < 30 + 30) {
-                    float colLengthD2 = (60 - dst) / 2;
-                    tmp.set(t2.getPosition()).sub(t1.getPosition()).nor().scl(colLengthD2);
-                    t2.moveBy(tmp);
-                    tmp.scl(-1);
-                    t1.moveBy(tmp);
+        List<Projectile> projectiles = projectilesController.getActiveList();
+        List<Tank> tanks = tanksController.getActiveList();
+        int nTanks = tanksController.activeSize();
+        for (int i = 0; i < nTanks; i++) {
+            Tank t1 = tanks.get(i);
+            if (i < nTanks - 1) {  // проверяем столкновения с другими танками
+                for (int j = i + 1; j < nTanks; j++) {
+                    Tank t2 = tanks.get(j);
+                    float dst = t1.getPosition().dst(t2.getPosition());
+                    if (dst < 30 + 30) {
+                        float colLengthD2 = (60 - dst) / 2;
+                        tmp.set(t2.getPosition()).sub(t1.getPosition()).nor().scl(colLengthD2);
+                        t2.moveBy(tmp);
+                        tmp.scl(-1);
+                        t1.moveBy(tmp);
+                    }
+                }
+            }
+            for (Projectile prj : projectiles) { // проверяем столкновения со чужими снарядами
+                if ((prj.getOwner() != t1.getOwner()) && (prj.getPosition().dst(t1.getPosition()) < 20)) {
+                    t1.damage(prj.getPower());
+                    prj.deactivate();
                 }
             }
         }
@@ -115,7 +126,7 @@ public class GameController {
                     if (Math.abs(tmp.x - selectionStart.x) > 20 & Math.abs(tmp.y - selectionStart.y) > 20) {
                         for (int i = 0; i < tanksController.getActiveList().size(); i++) {
                             Tank t = tanksController.getActiveList().get(i);
-                            if (t.getOwnerType() == Tank.Owner.PLAYER && t.getPosition().x > selectionStart.x && t.getPosition().x < tmp.x
+                            if (t.getOwner() == Owner.PLAYER && t.getPosition().x > selectionStart.x && t.getPosition().x < tmp.x
                                     && t.getPosition().y > tmp.y && t.getPosition().y < selectionStart.y
                             ) {
                                 selectedUnits.add(t);
@@ -124,7 +135,7 @@ public class GameController {
                     } else {
                         for (int i = 0; i < tanksController.getActiveList().size(); i++) {
                             Tank t = tanksController.getActiveList().get(i);
-                            if (t.getPosition().dst(tmp) < 30.0f) {
+                            if (t.getOwner() == Owner.PLAYER && t.getPosition().dst(tmp) < 30.0f) {
                                 selectedUnits.add(t);
                             }
                         }

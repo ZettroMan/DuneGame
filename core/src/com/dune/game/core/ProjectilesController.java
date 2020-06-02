@@ -24,9 +24,9 @@ public class ProjectilesController extends ObjectPool<Projectile> {
         }
     }
 
-    public void setup(Vector2 srcPosition, float angle) {
+    public void setup(Vector2 srcPosition, float angle, int power, Owner owner) {
         Projectile p = activateObject();
-        p.setup(srcPosition, angle, projectileTexture);
+        p.setup(srcPosition, angle, projectileTexture, power, owner);
     }
 
     public void update(float dt) {
