@@ -1,4 +1,4 @@
-package com.dune.game.core;
+package com.dune.game.core.units;
 
 public enum Owner {
     PLAYER, AI
