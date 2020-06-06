@@ -29,21 +29,32 @@ public abstract class AbstractUnit extends GameObject implements Poolable, Targe
 
     protected Targetable target;
     protected float minDstToActiveTarget;
+    protected float calmDownTime;
+    protected float calmDownPeriod;
+    protected AbstractUnit attacker;
+    protected boolean isReacted;
 
     @Override
     public TargetType getType() {
         return TargetType.UNIT;
     }
 
-    public boolean takeDamage(int damage) {
+    public boolean takeDamage(int damage, AbstractUnit attacker) {
         if (!isActive()) {
             return false;
         }
         hp -= damage;
-        if (hp <= 0) {
-            return true;
-        }
-        return false;
+        if (this.attacker == null) this.attacker = attacker;
+        calmDownTime = calmDownPeriod;
+        return hp <= 0;
+    }
+
+    public boolean isUnderAttack() {
+        return attacker != null;
+    }
+
+    public AbstractUnit getAttacker() {
+        return attacker;
     }
 
     public UnitType getUnitType() {
@@ -79,6 +90,14 @@ public abstract class AbstractUnit extends GameObject implements Poolable, Targe
         this.progressbarTexture = Assets.getInstance().getAtlas().findRegion("progressbar");
         this.timePerFrame = 0.08f;
         this.rotationSpeed = 90.0f;
+        this.attacker = null;
+        this.isReacted = false;
+        this.calmDownPeriod = 3.0f;
+        this.calmDownTime = -0.0f;
+    }
+
+    public boolean isReacted() {
+        return isReacted;
     }
 
     public abstract void setup(Owner ownerType, float x, float y);
@@ -88,6 +107,10 @@ public abstract class AbstractUnit extends GameObject implements Poolable, Targe
     }
 
     public void update(float dt) {
+        if (calmDownTime > 0) {
+            calmDownTime -= dt;
+            if (calmDownTime < 0) attacker = null;
+        }
         lifeTime += dt;
         // Если у танка есть цель, он пытается ее атаковать
         if (target != null) {
@@ -114,6 +137,13 @@ public abstract class AbstractUnit extends GameObject implements Poolable, Targe
     public void commandMoveTo(Vector2 point) {
         destination.set(point);
         target = null;
+        isReacted = false;
+    }
+
+    public void commandAvoidTo(Vector2 point) {
+        destination.set(point);
+        target = null;
+        isReacted = true;
     }
 
     public abstract void commandAttack(Targetable target);
