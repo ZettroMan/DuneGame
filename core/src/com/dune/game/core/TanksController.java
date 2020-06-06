@@ -25,7 +25,7 @@ public class TanksController extends ObjectPool<Tank> {
         }
     }
 
-    public void setup(float x, float y, Tank.Owner ownerType) {
+    public void setup(float x, float y, Owner ownerType) {
         Tank t = activateObject();
         t.setup(ownerType, x, y);
     }
@@ -33,7 +33,7 @@ public class TanksController extends ObjectPool<Tank> {
     public Tank getNearestAiTank(Vector2 point) {
         for (int i = 0; i < activeList.size(); i++) {
             Tank t = activeList.get(i);
-            if (t.getOwnerType() == Tank.Owner.AI && t.getPosition().dst(point) < 30) {
+            if (t.getOwner() == Owner.AI && t.getPosition().dst(point) < 30) {
                 return t;
             }
         }
@@ -53,7 +53,7 @@ public class TanksController extends ObjectPool<Tank> {
         if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
             for (int i = 0; i < gc.getSelectedUnits().size(); i++) {
                 Tank t = gc.getSelectedUnits().get(i);
-                if (t.getOwnerType() == Tank.Owner.PLAYER && gc.getSelectedUnits().contains(t)) {
+                if (t.getOwner() == Owner.PLAYER && gc.getSelectedUnits().contains(t)) {
                     tmp.set(Gdx.input.getX(), 720 - Gdx.input.getY());
                     if (t.getWeapon().getType() == Weapon.Type.HARVEST) {
                         t.commandMoveTo(tmp);
