@@ -15,7 +15,7 @@ public class Harvester extends AbstractUnit {
         this.containerCapacity = 10;
         this.minDstToActiveTarget = 5.0f;
         this.speed = 120.0f;
-        this.weapon = new Weapon(4.0f, 1);
+        this.weapon = new Weapon(4.0f, 1, 100.0f);
         this.hpMax = 500;
         this.unitType = UnitType.HARVESTER;
     }

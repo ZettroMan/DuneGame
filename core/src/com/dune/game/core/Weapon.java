@@ -5,6 +5,7 @@ public class Weapon {
     private float time;
     private float angle;
     private int power;
+    private float maxDistance;
 
     public float getAngle() {
         return angle;
@@ -18,9 +19,10 @@ public class Weapon {
         return time / period;
     }
 
-    public Weapon(float period, int power) {
+    public Weapon(float period, int power, float maxDistance) {
         this.period = period;
         this.power = power;
+        this.maxDistance = maxDistance;
     }
 
     public void reset() {
@@ -34,5 +36,9 @@ public class Weapon {
             return power;
         }
         return -1;
+    }
+
+    public float getMaxDistance() {
+        return maxDistance;
     }
 }

@@ -36,8 +36,8 @@ public class Collider {
             for (int j = 0; j < gc.getUnitsController().getUnits().size(); j++) {
                 AbstractUnit u = gc.getUnitsController().getUnits().get(j);
                 if (p.getOwner() != u && p.getPosition().dst(u.getPosition()) < 30) {
+                    u.takeDamage(5, p.getOwner());
                     p.deactivate();
-                    u.takeDamage(5);
                 }
             }
         }
