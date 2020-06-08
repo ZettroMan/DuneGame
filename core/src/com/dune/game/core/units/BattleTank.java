@@ -15,7 +15,7 @@ public class BattleTank extends AbstractUnit {
         this.minDstToActiveTarget = 240.0f;
         this.speed = 120.0f;
         this.hpMax = 100;
-        this.weapon = new Weapon(1.5f, 1, 350.0f);
+        this.weapon = new Weapon(1.5f, 1);
         this.containerCapacity = 50;
         this.unitType = UnitType.BATTLE_TANK;
     }
@@ -34,10 +34,6 @@ public class BattleTank extends AbstractUnit {
                 target = null;
                 return;
             }
-
-            // если цель вышла за пределы поражения
-            if(position.dst(target.getPosition()) > weapon.getMaxDistance()) return;
-
             float angleTo = tmp.set(target.getPosition()).sub(position).angle();
             weapon.setAngle(rotateTo(weapon.getAngle(), angleTo, 180.0f, dt));
             int power = weapon.use(dt);
@@ -54,7 +50,6 @@ public class BattleTank extends AbstractUnit {
     public void commandAttack(Targetable target) {
         if (target.getType() == TargetType.UNIT && ((AbstractUnit) target).getOwnerType() != this.ownerType) {
             this.target = target;
-            if(isUnderAttack()) isReacted = true;
         } else {
             commandMoveTo(target.getPosition());
         }

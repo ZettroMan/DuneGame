@@ -91,17 +91,4 @@ public class UnitsController {
         }
         return null;
     }
-
-    public AbstractUnit getNearestPlayerUnit(Vector2 point) {
-        AbstractUnit resultUnit = null;
-        float minDistance = 5000.0f;
-        for (int i = 0; i < playerUnits.size(); i++) {
-            AbstractUnit u = playerUnits.get(i);
-            if (u.getPosition().dst(point) < minDistance) {
-                minDistance = u.getPosition().dst(point);
-                resultUnit = u;
-            }
-        }
-        return resultUnit;
-    }
 }
