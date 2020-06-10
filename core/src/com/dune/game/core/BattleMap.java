@@ -4,8 +4,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.dune.game.core.units.BattleTank;
-import com.dune.game.core.units.Harvester;
 
 public class BattleMap {
     private class Cell {
@@ -17,26 +15,32 @@ public class BattleMap {
         public Cell(int cellX, int cellY) {
             this.cellX = cellX;
             this.cellY = cellY;
+            resource = -1;  // empty cell,  -2 - occupied cell, >=0 - resource cell
             if (MathUtils.random() < 0.1f) {
                 resource = MathUtils.random(1, 3);
             }
-            resourceRegenerationRate = MathUtils.random(5.0f) - 4.5f;
-            if (resourceRegenerationRate < 0.0f) {
-                resourceRegenerationRate = 0.0f;
-            } else {
-                resourceRegenerationRate *= 20.0f;
-                resourceRegenerationRate += 10.0f;
+            resourceRegenerationRate = 0.0f;
+            if(resource >= 0) {
+                resourceRegenerationRate = MathUtils.random(5.0f) - 2.0f;
+                if (resourceRegenerationRate < 0.0f) {
+                    resourceRegenerationRate = 0.0f;
+                } else {
+                    resourceRegenerationRate *= 3.0f;
+                    resourceRegenerationRate += 10.0f;
+                }
             }
         }
 
         private void update(float dt) {
-            if (resourceRegenerationRate > 0.01f) {
-                resourceRegenerationTime += dt;
-                if (resourceRegenerationTime > resourceRegenerationRate) {
-                    resourceRegenerationTime = 0.0f;
-                    resource++;
-                    if (resource > 5) {
-                        resource = 5;
+            if(resource >= 0) {
+                if (resourceRegenerationRate > 0.01f) {
+                    resourceRegenerationTime += dt;
+                    if (resourceRegenerationTime > resourceRegenerationRate) {
+                        resourceRegenerationTime = 0.0f;
+                        resource++;
+                        if (resource > 5) {
+                            resource = 5;
+                        }
                     }
                 }
             }
@@ -51,6 +55,14 @@ public class BattleMap {
                     batch.draw(resourceTexture, cellX * 80, cellY * 80, 40, 40, 80, 80, 0.1f, 0.1f, 0.0f);
                 }
             }
+        }
+
+        private void occupy() {
+            resource = -2;
+        }
+
+        public boolean isOccupied() {
+            return resource != -1;
         }
     }
 
@@ -78,7 +90,19 @@ public class BattleMap {
     public int getResourceCount(Vector2 point) {
         int cx = (int) (point.x / CELL_SIZE);
         int cy = (int) (point.y / CELL_SIZE);
-        return cells[cx][cy].resource;
+        return Math.max(cells[cx][cy].resource, 0);
+    }
+
+    public boolean isOccupied(int cx, int cy) {
+        return cells[cx][cy].isOccupied();
+    }
+
+    public boolean isFree(int cx, int cy) {
+        return !isOccupied(cx, cy);
+    }
+
+    public void occupy(int cx, int cy) {
+        cells[cx][cy].occupy();
     }
 
     public int harvestResource(Vector2 point, int power) {
@@ -88,7 +112,7 @@ public class BattleMap {
         if (cells[cx][cy].resource >= power) {
             value = power;
             cells[cx][cy].resource -= power;
-        } else {
+        } else if(cells[cx][cy].resource > 0){
             value = cells[cx][cy].resource;
             cells[cx][cy].resource = 0;
         }

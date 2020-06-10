@@ -3,7 +3,6 @@ package com.dune.game.core;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.dune.game.core.units.AbstractUnit;
-import com.dune.game.core.units.BattleTank;
 import com.dune.game.core.units.Owner;
 import com.dune.game.core.units.UnitType;
 
@@ -41,6 +40,12 @@ public class PlayerLogic {
                 }
             }
         }
+        // я сделал сбор накопленных на фабриках ресурсов в автоматическом режиме.
+        // По идее правильнее это было бы сделать в ручном режиме при наведении
+        // на фабрику и, например, щелчком правой клавиши мыши. Позже сделаю.
+        for (int i = 0; i < gc.getFactories().size() ; i++) {
+            money += gc.getFactories().get(i).flushStock();
+        }
     }
 
     public void unitProcessing(AbstractUnit unit) {
@@ -56,5 +61,15 @@ public class PlayerLogic {
                 unit.commandAttack(aiUnit);
             }
         }
+    }
+
+    public void addMoney(int money) {
+        this.money += money;
+    }
+
+    public boolean spendMoney(int money) {
+        if(this.money < money) return false;
+        this.money -= money;
+        return true;
     }
 }

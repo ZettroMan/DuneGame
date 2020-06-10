@@ -41,10 +41,7 @@ public abstract class AbstractUnit extends GameObject implements Poolable, Targe
             return false;
         }
         hp -= damage;
-        if (hp <= 0) {
-            return true;
-        }
-        return false;
+        return hp <= 0;
     }
 
     public UnitType getUnitType() {
@@ -188,5 +185,13 @@ public abstract class AbstractUnit extends GameObject implements Poolable, Targe
             srcAngle -= 360.0f;
         }
         return srcAngle;
+    }
+
+    public int getContainer() {
+        return container;
+    }
+
+    public void resetContainer() {
+        this.container = 0;
     }
 }
