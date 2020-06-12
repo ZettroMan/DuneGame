@@ -27,6 +27,9 @@ public class WorldRenderer {
         ScreenManager.getInstance().pointCameraTo(gc.getPointOfView());
         batch.begin();
         gc.getMap().render(batch);
+        for (int i = 0; i < gc.getFactories().size() ; i++) {
+            gc.getFactories().get(i).render(batch);
+        }
         gc.getUnitsController().render(batch);
         gc.getProjectilesController().render(batch);
         gc.getParticleController().render(batch);

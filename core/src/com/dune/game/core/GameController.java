@@ -3,6 +3,7 @@ package com.dune.game.core;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -13,10 +14,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.dune.game.core.gui.GuiPlayerInfo;
 import com.dune.game.core.units.AbstractUnit;
+import com.dune.game.core.units.Owner;
 import com.dune.game.screens.ScreenManager;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.dune.game.core.BattleMap.*;
 
 public class GameController {
     private static final float CAMERA_SPEED = 240.0f;
@@ -33,6 +37,7 @@ public class GameController {
     private Vector2 mouse;
     private Collider collider;
     private Vector2 pointOfView;
+    private List<SpiceFactory> factories;
 
     private List<AbstractUnit> selectedUnits;
 
@@ -78,6 +83,10 @@ public class GameController {
         return map;
     }
 
+    public GuiPlayerInfo getGuiPlayerInfo() {
+        return guiPlayerInfo;
+    }
+
     public GameController() {
         this.mouse = new Vector2();
         this.tmp = new Vector2();
@@ -91,7 +100,33 @@ public class GameController {
         this.particleController = new ParticleController();
         this.unitsController = new UnitsController(this);
         this.pointOfView = new Vector2(ScreenManager.HALF_WORLD_WIDTH, ScreenManager.HALF_WORLD_HEIGHT);
+        this.factories = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            boolean done = false;
+            while (!done) {
+                int col = MathUtils.random(0, COLUMNS_COUNT - 2);
+                int row = MathUtils.random(0, ROWS_COUNT - 2);
+                // check, if it's possible to place factory at this square 2x2
+                if (map.isFree(col, row) && map.isFree(col + 1, row) &&
+                        map.isFree(col, row + 1) && map.isFree(col + 1, row + 1)) {
+                    done = true;
+                    createSpiceFactory(Owner.PLAYER, (col + 1) * CELL_SIZE, (row + 1) * CELL_SIZE);
+                    map.occupy(col, row);
+                    map.occupy(col + 1, row);
+                    map.occupy(col, row + 1);
+                    map.occupy(col + 1, row + 1);
+                }
+            }
+        }
         createGuiAndPrepareGameInput();
+    }
+
+    public void createSpiceFactory(Owner owner, float x, float y) {
+        factories.add(new SpiceFactory(this, owner, new Vector2(x, y)));
+    }
+
+    public List<SpiceFactory> getFactories() {
+        return factories;
     }
 
     public void update(float dt) {
@@ -102,7 +137,7 @@ public class GameController {
         playerLogic.update(dt);
         projectilesController.update(dt);
         map.update(dt);
-        collider.checkCollisions();
+        collider.checkCollisions(dt);
         particleController.update(dt);
 //        for (int i = 0; i < 5; i++) {
 //            particleController.setup(mouse.x, mouse.y, MathUtils.random(-15.0f, 15.0f), MathUtils.random(-30.0f, 30.0f), 0.5f,
@@ -222,7 +257,6 @@ public class GameController {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 System.out.println("Test");
-                ;
             }
         });
         Group menuGroup = new Group();

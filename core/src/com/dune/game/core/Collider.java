@@ -4,6 +4,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.dune.game.core.units.AbstractUnit;
 import com.dune.game.core.units.BattleTank;
+import com.dune.game.core.units.Harvester;
+import com.dune.game.core.units.UnitType;
 
 import java.util.List;
 
@@ -16,7 +18,7 @@ public class Collider {
         this.tmp = new Vector2();
     }
 
-    public void checkCollisions() {
+    public void checkCollisions(float dt) {
         List<AbstractUnit> units = gc.getUnitsController().getUnits();
         for (int i = 0; i < units.size() - 1; i++) {
             AbstractUnit u1 = units.get(i);
@@ -30,6 +32,21 @@ public class Collider {
                     tmp.scl(-1);
                     u1.moveBy(tmp);
                 }
+            }
+            for (int j = 0; j < gc.getFactories().size(); j++) {
+                float dst = u1.getPosition().dst(gc.getFactories().get(j).getPosition());
+                float minDistance = 85.0f;
+                if (dst < minDistance) {
+                    float colLengthD2 = (dst - minDistance) / 2;
+                    tmp.set(gc.getFactories().get(j).getPosition()).sub(u1.getPosition()).nor().scl(colLengthD2);
+                    u1.moveBy(tmp);
+                    if (u1.getUnitType() == UnitType.HARVESTER
+                            && u1.getOwnerType() == gc.getFactories().get(j).getOwnerType()
+                            && u1.getContainer() > 0) {
+                        ((Harvester) u1).unloadTo(gc.getFactories().get(j), dt);
+                    }
+                }
+
             }
         }
         for (int i = 0; i < gc.getProjectilesController().activeSize(); i++) {
