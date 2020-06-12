@@ -25,8 +25,8 @@ public class BattleMap {
             if (resourceRegenerationRate < 0.0f) {
                 resourceRegenerationRate = 0.0f;
             } else {
-                resourceRegenerationRate *= 20.0f;
-                resourceRegenerationRate += 10.0f;
+                resourceRegenerationRate *= 100.0f;
+                resourceRegenerationRate += 50.0f;
             }
             this.groundPassable = true;
         }
@@ -111,6 +111,10 @@ public class BattleMap {
     public int getResourceCount(Vector2 point) {
         int cx = (int) (point.x / CELL_SIZE);
         int cy = (int) (point.y / CELL_SIZE);
+        return cells[cx][cy].resource;
+    }
+
+    public int getResourceCount(int cx, int cy) {
         return cells[cx][cy].resource;
     }
 

@@ -31,7 +31,7 @@ public class Harvester extends AbstractUnit {
     }
 
     public void updateWeapon(float dt) {
-        if (gc.getMap().getResourceCount(position) > 0) {
+        if (gc.getMap().getResourceCount(position) > 0 && container < containerCapacity) {
             int result = weapon.use(dt);
             if (result > -1) {
                 container += gc.getMap().harvestResource(position, result);
@@ -68,5 +68,9 @@ public class Harvester extends AbstractUnit {
             baseLogic.addMoney(container * 100);
             container = 0;
         }
+    }
+
+    public float getFullness() {
+        return ((float) container / containerCapacity);
     }
 }

@@ -19,6 +19,7 @@ public class Building extends GameObject implements Poolable {
     private Type type;
     private TextureRegion texture;
     private Vector2 textureWorldPosition;
+    private Vector2 entrancePosition;
     private int hpMax;
     private int hp;
     private int cellX, cellY;
@@ -40,6 +41,7 @@ public class Building extends GameObject implements Poolable {
         super(gc);
         this.texture = Assets.getInstance().getAtlas().findRegion("grass");
         this.textureWorldPosition = new Vector2();
+        this.entrancePosition = new Vector2();
     }
 
     public void setup(BaseLogic ownerLogic, int cellX, int cellY) {
@@ -58,6 +60,7 @@ public class Building extends GameObject implements Poolable {
 //            }
 //        }
         gc.getMap().setupBuildingEntrance(cellX, cellY - 1, this);
+        this.entrancePosition.set(((float)cellX + 0.5f) * BattleMap.CELL_SIZE, ((float) cellY - 0.5f) * BattleMap.CELL_SIZE);
     }
 
     public void render(SpriteBatch batch) {
@@ -78,5 +81,9 @@ public class Building extends GameObject implements Poolable {
             }
         }
         gc.getMap().setupBuildingEntrance(cellX, cellY - 1, null);
+    }
+
+    public Vector2 getEntrancePosition() {
+        return entrancePosition;
     }
 }
