@@ -53,10 +53,7 @@ public abstract class AbstractUnit extends GameObject implements Poolable, Targe
             return false;
         }
         hp -= damage;
-        if (hp <= 0) {
-            return true;
-        }
-        return false;
+        return hp <= 0;
     }
 
     public UnitType getUnitType() {
@@ -170,9 +167,9 @@ public abstract class AbstractUnit extends GameObject implements Poolable, Targe
             r = 0.4f;
         }
         batch.setColor(c, c - r, c - r, 1.0f);
-        batch.draw(textures[getCurrentFrameIndex()], position.x - 40, position.y - 40, 40, 40, 80, 80, 1, 1, angle);
+        batch.draw(textures[getCurrentFrameIndex()], position.x - 32, position.y - 32, 32, 32, 64, 64, 1, 1, angle);
 
-        batch.draw(weaponTexture, position.x - 40, position.y - 40, 40, 40, 80, 80, 1, 1, weapon.getAngle());
+        batch.draw(weaponTexture, position.x - 32, position.y - 32, 32, 32, 64, 64, 1, 1, weapon.getAngle());
 
         batch.setColor(1, 1, 1, 1);
         renderGui(batch);
@@ -204,5 +201,13 @@ public abstract class AbstractUnit extends GameObject implements Poolable, Targe
             srcAngle -= 360.0f;
         }
         return srcAngle;
+    }
+
+    public float getHealth() {
+        return ((float) hp / hpMax);
+    }
+
+    public Vector2 getDestination() {
+        return destination;
     }
 }
