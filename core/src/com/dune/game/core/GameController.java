@@ -1,9 +1,10 @@
 package com.dune.game.core;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -12,15 +13,20 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.dune.game.core.controllers.BuildingsController;
+import com.dune.game.core.controllers.ParticleController;
+import com.dune.game.core.controllers.ProjectilesController;
+import com.dune.game.core.controllers.UnitsController;
 import com.dune.game.core.gui.GuiPlayerInfo;
 import com.dune.game.core.units.AbstractUnit;
-import com.dune.game.core.units.Owner;
+import com.dune.game.core.users_logic.AiLogic;
+import com.dune.game.core.users_logic.PlayerLogic;
+import com.dune.game.core.utils.Collider;
 import com.dune.game.screens.ScreenManager;
+import com.dune.game.screens.utils.Assets;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.dune.game.core.BattleMap.*;
 
 public class GameController {
     private static final float CAMERA_SPEED = 240.0f;
@@ -28,16 +34,26 @@ public class GameController {
     private BattleMap map;
     private GuiPlayerInfo guiPlayerInfo;
     private PlayerLogic playerLogic;
+    private AiLogic aiLogic;
     private ProjectilesController projectilesController;
     private ParticleController particleController;
     private UnitsController unitsController;
+    private BuildingsController buildingsController;
     private Vector2 tmp;
     private Vector2 selectionStart;
     private Vector2 selectionEnd;
     private Vector2 mouse;
     private Collider collider;
     private Vector2 pointOfView;
-    private List<SpiceFactory> factories;
+    private float worldTimer;
+    private boolean paused;
+
+//    private Music music;
+//    private Sound sound;
+
+    public float getWorldTimer() {
+        return worldTimer;
+    }
 
     private List<AbstractUnit> selectedUnits;
 
@@ -51,8 +67,21 @@ public class GameController {
         return particleController;
     }
 
+    public PlayerLogic getPlayerLogic() {
+        return playerLogic;
+    }
+
+    public AiLogic getAiLogic() {
+        return aiLogic;
+    }
+
     public Vector2 getSelectionStart() {
         return selectionStart;
+    }
+
+
+    public boolean isPaused() {
+        return paused;
     }
 
     public Vector2 getSelectionEnd() {
@@ -83,14 +112,15 @@ public class GameController {
         return map;
     }
 
-    public GuiPlayerInfo getGuiPlayerInfo() {
-        return guiPlayerInfo;
+    public BuildingsController getBuildingsController() {
+        return buildingsController;
     }
 
     public GameController() {
         this.mouse = new Vector2();
         this.tmp = new Vector2();
         this.playerLogic = new PlayerLogic(this);
+        this.aiLogic = new AiLogic(this);
         this.collider = new Collider(this);
         this.selectionStart = new Vector2(-1, -1);
         this.selectionEnd = new Vector2(-1, -1);
@@ -98,80 +128,67 @@ public class GameController {
         this.map = new BattleMap();
         this.projectilesController = new ProjectilesController(this);
         this.particleController = new ParticleController();
+        this.buildingsController = new BuildingsController(this);
         this.unitsController = new UnitsController(this);
         this.pointOfView = new Vector2(ScreenManager.HALF_WORLD_WIDTH, ScreenManager.HALF_WORLD_HEIGHT);
-        this.factories = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-            boolean done = false;
-            while (!done) {
-                int col = MathUtils.random(0, COLUMNS_COUNT - 2);
-                int row = MathUtils.random(0, ROWS_COUNT - 2);
-                // check, if it's possible to place factory at this square 2x2
-                if (map.isFree(col, row) && map.isFree(col + 1, row) &&
-                        map.isFree(col, row + 1) && map.isFree(col + 1, row + 1)) {
-                    done = true;
-                    createSpiceFactory(Owner.PLAYER, (col + 1) * CELL_SIZE, (row + 1) * CELL_SIZE);
-                    map.occupy(col, row);
-                    map.occupy(col + 1, row);
-                    map.occupy(col, row + 1);
-                    map.occupy(col + 1, row + 1);
-                }
-            }
-        }
+        this.buildingsController.setup(3, 3, playerLogic);
+        this.buildingsController.setup(14, 8, aiLogic);
+//        this.music = Gdx.audio.newMusic(Gdx.files.internal("1.mp3"));
+//        this.sound = Gdx.audio.newSound(Gdx.files.internal("explosion.wav"));
         createGuiAndPrepareGameInput();
     }
 
-    public void createSpiceFactory(Owner owner, float x, float y) {
-        factories.add(new SpiceFactory(this, owner, new Vector2(x, y)));
-    }
-
-    public List<SpiceFactory> getFactories() {
-        return factories;
-    }
-
     public void update(float dt) {
-        ScreenManager.getInstance().pointCameraTo(getPointOfView());
-        mouse.set(Gdx.input.getX(), Gdx.input.getY());
-        ScreenManager.getInstance().getViewport().unproject(mouse);
-        unitsController.update(dt);
-        playerLogic.update(dt);
-        projectilesController.update(dt);
-        map.update(dt);
-        collider.checkCollisions(dt);
-        particleController.update(dt);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+            paused = !paused;
+        }
+        if (!paused) {
+            worldTimer += dt;
+            ScreenManager.getInstance().pointCameraTo(getPointOfView());
+            mouse.set(Gdx.input.getX(), Gdx.input.getY());
+            ScreenManager.getInstance().getViewport().unproject(mouse);
+            unitsController.update(dt);
+            playerLogic.update(dt);
+            aiLogic.update(dt);
+            buildingsController.update(dt);
+            projectilesController.update(dt);
+            map.update(dt);
+            collider.checkCollisions();
+            particleController.update(dt);
 //        for (int i = 0; i < 5; i++) {
 //            particleController.setup(mouse.x, mouse.y, MathUtils.random(-15.0f, 15.0f), MathUtils.random(-30.0f, 30.0f), 0.5f,
 //                    0.3f, 1.4f, 1, 1, 0, 1, 1, 0, 0, 0.5f);
 //        }
-        guiPlayerInfo.update(dt);
+            guiPlayerInfo.update(dt);
+        }
         ScreenManager.getInstance().resetCamera();
         stage.act(dt);
         changePOV(dt);
     }
 
     public void changePOV(float dt) {
-        if (Gdx.input.getY() < 20) {
+        if (Gdx.input.getY() < 10) {
             pointOfView.y += CAMERA_SPEED * dt;
             if (pointOfView.y + ScreenManager.HALF_WORLD_HEIGHT > BattleMap.MAP_HEIGHT_PX) {
                 pointOfView.y = BattleMap.MAP_HEIGHT_PX - ScreenManager.HALF_WORLD_HEIGHT;
             }
             ScreenManager.getInstance().pointCameraTo(pointOfView);
         }
-        if (Gdx.input.getY() > 700) {
+        if (Gdx.input.getY() > 710) {
             pointOfView.y -= CAMERA_SPEED * dt;
             if (pointOfView.y < ScreenManager.HALF_WORLD_HEIGHT) {
                 pointOfView.y = ScreenManager.HALF_WORLD_HEIGHT;
             }
             ScreenManager.getInstance().pointCameraTo(pointOfView);
         }
-        if (Gdx.input.getX() < 20) {
+        if (Gdx.input.getX() < 10) {
             pointOfView.x -= CAMERA_SPEED * dt;
             if (pointOfView.x < ScreenManager.HALF_WORLD_WIDTH) {
                 pointOfView.x = ScreenManager.HALF_WORLD_WIDTH;
             }
             ScreenManager.getInstance().pointCameraTo(pointOfView);
         }
-        if (Gdx.input.getX() > 1260) {
+        if (Gdx.input.getX() > 1270) {
             pointOfView.x += CAMERA_SPEED * dt;
             if (pointOfView.x + ScreenManager.HALF_WORLD_WIDTH > BattleMap.MAP_WIDTH_PX) {
                 pointOfView.x = BattleMap.MAP_WIDTH_PX - ScreenManager.HALF_WORLD_WIDTH;
@@ -257,6 +274,7 @@ public class GameController {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 System.out.println("Test");
+                ;
             }
         });
         Group menuGroup = new Group();
